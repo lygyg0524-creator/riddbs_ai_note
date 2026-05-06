@@ -1,7 +1,0 @@
-{
-  "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"C:\\\\Users\\\\임양균\\\\.claude\\\\projects\\\\C--Users------claude-ai-note-app\\\\memory\\\\MEMORY.md\"}",
-  "error": "File does not exist. Note: your current working directory is C:\\Users\\임양균\\.claude\\ai-note-app.",
-  "timestamp": "2026-05-06T00:44:42.659Z",
-  "retry_count": 1
-}
