@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* ProseMirror 에디터 콘텐츠 스타일 */
+.prose-editor h1 { @apply text-2xl font-bold mb-3 text-white; }
+.prose-editor h2 { @apply text-xl font-bold mb-2 text-white; }
+.prose-editor p { @apply mb-2 leading-relaxed; }
+.prose-editor ul { @apply list-disc list-inside mb-2 space-y-1; }
+.prose-editor ol { @apply list-decimal list-inside mb-2 space-y-1; }
+.prose-editor li { @apply text-gray-100; }
+.prose-editor strong { @apply font-bold text-white; }
+.prose-editor em { @apply italic; }
+.prose-editor p.is-editor-empty:first-child::before {
+  @apply text-gray-500 pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
