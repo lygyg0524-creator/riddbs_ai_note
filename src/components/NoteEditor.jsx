@@ -18,7 +18,7 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
     content: '',
     editorProps: {
       attributes: {
-        class: 'outline-none min-h-[400px] p-4 text-gray-100 prose-editor',
+        class: 'outline-none min-h-[400px] px-16 py-6 text-[#e8e8e8] prose-editor',
       },
     },
     onUpdate: ({ editor }) => {
@@ -69,31 +69,39 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
   }
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden flex flex-col h-full">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-700">
+    <div className="bg-[#191919] flex flex-col h-full">
+      {/* 제목 영역 */}
+      <div className="px-16 pt-10 pb-4">
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="노트 제목을 입력하세요"
+          placeholder="제목 없음"
           maxLength={200}
           autoComplete="off"
-          className="flex-1 bg-transparent text-white text-lg font-medium placeholder-gray-500 outline-none"
+          className="w-full bg-transparent text-[#e8e8e8] text-3xl font-bold placeholder-[#373737] outline-none"
         />
-        {saveError && (
-          <span className="text-xs text-red-400 truncate max-w-[200px]" title={saveError}>
-            저장 실패: {saveError}
-          </span>
-        )}
-        <button
-          onClick={handleSave}
-          className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          저장
-        </button>
       </div>
-      <Toolbar editor={editor} />
-      <div className="flex-1 overflow-y-auto focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-inset transition-shadow">
+
+      {/* 툴바 + 저장 버튼 행 */}
+      <div className="flex items-center justify-between border-b border-[#373737]">
+        <Toolbar editor={editor} />
+        <div className="flex items-center gap-3 px-4">
+          {saveError && (
+            <span className="text-xs text-red-400 truncate max-w-[180px]" title={saveError}>
+              저장 실패: {saveError}
+            </span>
+          )}
+          <button
+            onClick={handleSave}
+            className="px-3 py-1 bg-[#2383e2] hover:bg-[#1a6bc7] text-white text-xs font-medium rounded-sm transition-colors"
+          >
+            저장
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
     </div>

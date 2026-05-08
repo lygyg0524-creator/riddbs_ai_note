@@ -26,9 +26,6 @@ function formatDate(iso) {
 }
 
 function NoteCard({ note, isSelected, onClick, onDelete }) {
-  const preview = getPreview(note)
-  const keywords = note.keywords?.slice(0, 3) ?? []
-
   function handleDelete(e) {
     e.stopPropagation()
     if (window.confirm(`"${note.title || '제목 없음'}" 노트를 삭제할까요?`)) {
@@ -39,32 +36,20 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
   return (
     <div
       onClick={() => onClick(note)}
-      className={`group relative w-full text-left p-3 rounded-lg transition-colors cursor-pointer ${
-        isSelected ? 'bg-blue-700' : 'hover:bg-gray-700'
+      className={`group relative flex items-center gap-2 w-full text-left px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
+        isSelected ? 'bg-[#2f2f2f] text-white' : 'text-[#e8e8e8] hover:bg-[#2f2f2f]'
       }`}
     >
-      <p className="font-medium text-white truncate text-sm pr-6">
+      <span className="text-[#9b9a97] shrink-0 text-sm">📄</span>
+      <span className="truncate text-sm pr-6">
         {note.title || '제목 없음'}
-      </p>
-      {preview && (
-        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{preview}</p>
-      )}
-      {keywords.length > 0 && (
-        <div className="flex gap-1 mt-2 flex-wrap">
-          {keywords.map((kw) => (
-            <span key={kw} className="text-xs px-1.5 py-0.5 bg-gray-600 text-gray-300 rounded">
-              {kw}
-            </span>
-          ))}
-        </div>
-      )}
-      <p className="text-xs text-gray-500 mt-1.5">{formatDate(note.updatedAt)}</p>
+      </span>
       <button
         onClick={handleDelete}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity p-1 rounded hover:bg-gray-600"
+        className="absolute right-2 opacity-0 group-hover:opacity-100 text-[#6b6b6b] hover:text-red-400 transition-opacity p-1 rounded-sm hover:bg-[#373737]"
         title="삭제"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="3 6 5 6 21 6" />
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
           <path d="M10 11v6" />
@@ -173,37 +158,44 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
   )
 
   return (
-    <div className="h-full flex flex-col bg-gray-900 border-r border-gray-700">
-      <div className="p-3 border-b border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-gray-300">노트 목록</h2>
+    <div className="h-full flex flex-col bg-[#202020] border-r border-[#373737]">
+      <div className="px-3 pt-3 pb-2 border-b border-[#373737]">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold text-[#9b9a97] uppercase tracking-wider">노트 목록</h2>
           <button
             onClick={onLogout}
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            className="text-xs text-[#6b6b6b] hover:text-[#9b9a97] transition-colors"
+            title="로그아웃"
           >
             로그아웃
           </button>
         </div>
-        <button
-          onClick={onNewNote}
-          className="w-full py-2 mb-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          + 새 노트 작성
-        </button>
-        {userEmail && (
-          <p className="text-xs text-gray-500 truncate mb-2">{userEmail}</p>
-        )}
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="검색..."
-          className="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded-lg placeholder-gray-500 outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-3 py-1.5 rounded-sm placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
         />
+        {userEmail && (
+          <p className="text-xs text-[#6b6b6b] truncate mt-2">{userEmail}</p>
+        )}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+
+      {/* 새 노트 버튼 */}
+      <div className="px-3 py-2 border-b border-[#373737]">
+        <button
+          onClick={onNewNote}
+          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-sm text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] text-sm transition-colors"
+        >
+          <span className="text-base leading-none">+</span>
+          <span>새 페이지</span>
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-1 px-2 space-y-0.5">
         {filtered.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-8">
+          <p className="text-[#6b6b6b] text-xs text-center py-8">
             {query ? '일치하는 노트가 없습니다' : '저장된 노트가 없습니다'}
           </p>
         ) : (
@@ -218,14 +210,15 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
           ))
         )}
       </div>
-      <div className="p-3 border-t border-gray-700 flex gap-2 shrink-0">
+
+      <div className="px-3 py-2 border-t border-[#373737] flex gap-2 shrink-0">
         <button
           onClick={handleExport}
-          className="flex-1 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+          className="flex-1 py-1.5 text-xs text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] rounded-sm transition-colors"
         >
-          전체 내보내기
+          내보내기
         </button>
-        <label className="flex-1 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-center cursor-pointer">
+        <label className="flex-1 py-1.5 text-xs text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] rounded-sm transition-colors text-center cursor-pointer">
           가져오기
           <input type="file" accept=".json" className="hidden" ref={importRef} onChange={handleImport} />
         </label>
