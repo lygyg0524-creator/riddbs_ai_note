@@ -47,20 +47,16 @@ function App() {
     }
   }, [selectedNote?.id])
 
-  // 요약 길이 변경 시 재요약
-  useEffect(() => {
-    if (plainText.trim().length >= 50) {
-      summarize(plainText, summaryLength, selectedNote?.id)
-    }
-  }, [summaryLength])
-
   const handleEditorUpdate = useCallback(
     (text) => {
       setPlainText(text)
-      summarize(text, summaryLength, selectedNote?.id)
     },
-    [summarize, summaryLength, selectedNote?.id]
+    []
   )
+
+  const handleSummarize = useCallback(() => {
+    summarize(plainText, summaryLength, selectedNote?.id)
+  }, [summarize, plainText, summaryLength, selectedNote?.id])
 
   if (user === undefined) {
     return (
@@ -117,6 +113,7 @@ function App() {
     error,
     summaryLength,
     onSummaryLengthChange: setSummaryLength,
+    onSummarize: handleSummarize,
     plainText,
     onRestoreVersion: setPendingRestore,
   }

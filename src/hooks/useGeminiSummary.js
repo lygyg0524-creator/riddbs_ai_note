@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { updateNoteSummary } from '../db/db'
 
 const API_URL =
@@ -39,56 +39,54 @@ export function useGeminiSummary() {
   const [keywords, setKeywords] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
-  const debounceRef = useRef(null)
 
-  const summarize = useCallback((text, summaryLength, noteId) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
+  const summarize = useCallback(async (text, summaryLength, noteId) => {
+    const trimmed = text?.trim() ?? ''
+    if (trimmed.length < 50) {
+      setError('노트 내용이 너무 짧습니다. (최소 50자)')
+      return
+    }
 
-    debounceRef.current = setTimeout(async () => {
-      const trimmed = text?.trim() ?? ''
-      if (trimmed.length < 50) return
+    const truncated = trimmed.slice(0, 3000)
+    setIsLoading(true)
+    setError(null)
 
-      const truncated = trimmed.slice(0, 3000)
-      setIsLoading(true)
-      setError(null)
-
-      const doCall = async () => {
-        const result = await callGeminiAPI(truncated, summaryLength)
-        setSummary(result.summary)
-        setKeywords(result.keywords ?? [])
-        if (noteId) {
-          await updateNoteSummary(noteId, {
-            summary: result.summary,
-            summaryLength,
-            keywords: result.keywords ?? [],
-          })
-        }
+    const doCall = async () => {
+      const result = await callGeminiAPI(truncated, summaryLength)
+      setSummary(result.summary)
+      setKeywords(result.keywords ?? [])
+      if (noteId) {
+        await updateNoteSummary(noteId, {
+          summary: result.summary,
+          summaryLength,
+          keywords: result.keywords ?? [],
+        })
       }
+    }
 
-      let retrying = false
-      try {
-        await doCall()
-      } catch (err) {
-        if (err.status === 429) {
-          retrying = true
-          setError('잠시 후 다시 시도합니다...')
-          setTimeout(async () => {
-            try {
-              await doCall()
-              setError(null)
-            } catch {
-              setError('요약 생성에 실패했습니다')
-            } finally {
-              setIsLoading(false)
-            }
-          }, 2000)
-        } else {
-          setError('요약 생성에 실패했습니다')
-        }
-      } finally {
-        if (!retrying) setIsLoading(false)
+    let retrying = false
+    try {
+      await doCall()
+    } catch (err) {
+      if (err.status === 429) {
+        retrying = true
+        setError('잠시 후 다시 시도합니다...')
+        setTimeout(async () => {
+          try {
+            await doCall()
+            setError(null)
+          } catch {
+            setError('요약 생성에 실패했습니다')
+          } finally {
+            setIsLoading(false)
+          }
+        }, 2000)
+      } else {
+        setError('요약 생성에 실패했습니다')
       }
-    }, 800)
+    } finally {
+      if (!retrying) setIsLoading(false)
+    }
   }, [])
 
   return { summarize, summary, setSummary, keywords, setKeywords, isLoading, error }

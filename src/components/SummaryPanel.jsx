@@ -20,6 +20,7 @@ function SummaryPanel({
   error,
   summaryLength,
   onSummaryLengthChange,
+  onSummarize,
   plainText,
   onRestoreVersion,
 }) {
@@ -35,10 +36,10 @@ function SummaryPanel({
 
   return (
     <div className="h-full flex flex-col bg-gray-900 border-l border-gray-700">
-      {/* 요약 길이 선택 */}
+      {/* 요약 길이 선택 + 요약 버튼 */}
       <div className="px-4 py-3 border-b border-gray-700">
         <h2 className="text-sm font-semibold text-gray-300 mb-2">AI 요약</h2>
-        <div className="flex gap-1">
+        <div className="flex gap-1 mb-2">
           {LENGTH_OPTIONS.map((opt) => (
             <button
               key={opt.id}
@@ -53,6 +54,13 @@ function SummaryPanel({
             </button>
           ))}
         </div>
+        <button
+          onClick={onSummarize}
+          disabled={isLoading}
+          className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-medium rounded transition-colors"
+        >
+          {isLoading ? '요약 중...' : 'AI 요약 생성'}
+        </button>
       </div>
 
       {/* 원문/요약 토글 */}
@@ -118,7 +126,7 @@ function SummaryPanel({
             )}
             {!isLoading && !error && !summary && (
               <p className="text-gray-500 text-sm">
-                노트 내용을 입력하면 자동으로 요약됩니다. (최소 50자)
+                위의 AI 요약 생성 버튼을 눌러 요약을 생성하세요. (최소 50자)
               </p>
             )}
           </>
