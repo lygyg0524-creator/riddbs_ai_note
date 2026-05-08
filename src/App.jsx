@@ -19,7 +19,8 @@ function App() {
   const user = useAuth()
   const notes = useNotes()
   const [selectedNote, setSelectedNote] = useState(null)
-  const [mobileTab, setMobileTab] = useState('editor')
+  const [showEditor, setShowEditor] = useState(false)
+  const [mobileTab, setMobileTab] = useState('list')
   const [summaryLength, setSummaryLength] = useState('medium')
   const [plainText, setPlainText] = useState('')
 
@@ -75,6 +76,13 @@ function App() {
 
   const handleSelect = (note) => {
     setSelectedNote(note)
+    setShowEditor(true)
+    setMobileTab('editor')
+  }
+
+  const handleNewNote = () => {
+    setSelectedNote(null)
+    setShowEditor(true)
     setMobileTab('editor')
   }
 
@@ -84,7 +92,10 @@ function App() {
 
   const handleDelete = async (id) => {
     await deleteNote(id)
-    if (selectedNote?.id === id) setSelectedNote(null)
+    if (selectedNote?.id === id) {
+      setSelectedNote(null)
+      setShowEditor(false)
+    }
   }
 
   const sharedEditorProps = {
@@ -112,11 +123,19 @@ function App() {
 
   const mobilePanel = () => {
     if (mobileTab === 'list')
-      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} userEmail={user.email} onLogout={handleLogout} />
+      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.email} onLogout={handleLogout} />
     if (mobileTab === 'editor')
       return (
-        <div className="p-4 h-full">
-          <NoteEditor {...sharedEditorProps} />
+        <div className="p-4 h-full flex items-center justify-center">
+          {showEditor
+            ? <NoteEditor {...sharedEditorProps} />
+            : (
+              <div className="text-center text-gray-600 select-none">
+                <p className="text-4xl mb-4">📝</p>
+                <p className="text-sm">노트를 선택하거나 새로 만들어 주세요</p>
+              </div>
+            )
+          }
         </div>
       )
     if (mobileTab === 'summary') return <SummaryPanel {...sharedSummaryProps} />
@@ -129,9 +148,17 @@ function App() {
         className="hidden md:grid flex-1 overflow-hidden"
         style={{ gridTemplateColumns: '25% 45% 30%' }}
       >
-        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} userEmail={user.email} onLogout={handleLogout} />
-        <div className="p-4 overflow-y-auto">
-          <NoteEditor {...sharedEditorProps} />
+        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.email} onLogout={handleLogout} />
+        <div className="p-4 overflow-y-auto flex items-center justify-center">
+          {showEditor
+            ? <NoteEditor {...sharedEditorProps} />
+            : (
+              <div className="text-center text-gray-600 select-none">
+                <p className="text-4xl mb-4">📝</p>
+                <p className="text-sm">노트를 선택하거나 새로 만들어 주세요</p>
+              </div>
+            )
+          }
         </div>
         <SummaryPanel {...sharedSummaryProps} />
       </div>

@@ -70,7 +70,7 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
   )
 }
 
-function NoteList({ notes = [], selectedNote, onSelect, onDelete, userEmail, onLogout }) {
+function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, userEmail, onLogout }) {
   const [query, setQuery] = useState('')
   const importRef = useRef(null)
 
@@ -178,6 +178,12 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, userEmail, onL
             로그아웃
           </button>
         </div>
+        <button
+          onClick={onNewNote}
+          className="w-full py-2 mb-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          + 새 노트 작성
+        </button>
         {userEmail && (
           <p className="text-xs text-gray-500 truncate mb-2">{userEmail}</p>
         )}
