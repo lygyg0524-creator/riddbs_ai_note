@@ -4,8 +4,9 @@ import StarterKit from '@tiptap/starter-kit'
 import Toolbar from './Toolbar'
 import { saveNote, updateNote } from '../db/db'
 
-function NoteEditor({ selectedNote, onEditorUpdate, summary, keywords, summaryLength, restoreContent, onRestoreDone }) {
+function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, summaryLength, restoreContent, onRestoreDone }) {
   const [title, setTitle] = useState('')
+  const [saveError, setSaveError] = useState(null)
   const onEditorUpdateRef = useRef(onEditorUpdate)
 
   useEffect(() => {
@@ -47,17 +48,23 @@ function NoteEditor({ selectedNote, onEditorUpdate, summary, keywords, summaryLe
 
   const handleSave = async () => {
     if (!editor) return
+    setSaveError(null)
     const content = editor.getJSON()
-    if (selectedNote?.id) {
-      await updateNote(selectedNote.id, {
-        title,
-        content,
-        summary: summary ?? null,
-        summaryLength: summaryLength ?? null,
-        keywords: keywords ?? [],
-      })
-    } else {
-      await saveNote({ title, content })
+    try {
+      if (selectedNote?.id) {
+        await updateNote(selectedNote.id, {
+          title,
+          content,
+          summary: summary ?? null,
+          summaryLength: summaryLength ?? null,
+          keywords: keywords ?? [],
+        })
+      } else {
+        const newNote = await saveNote({ title, content })
+        onSave?.(newNote)
+      }
+    } catch (err) {
+      setSaveError(err.message)
     }
   }
 
@@ -73,6 +80,11 @@ function NoteEditor({ selectedNote, onEditorUpdate, summary, keywords, summaryLe
           autoComplete="off"
           className="flex-1 bg-transparent text-white text-lg font-medium placeholder-gray-500 outline-none"
         />
+        {saveError && (
+          <span className="text-xs text-red-400 truncate max-w-[200px]" title={saveError}>
+            저장 실패: {saveError}
+          </span>
+        )}
         <button
           onClick={handleSave}
           className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"

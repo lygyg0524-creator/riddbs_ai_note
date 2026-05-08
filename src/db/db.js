@@ -10,10 +10,10 @@ export async function saveNote({ title, content, summary = null, summaryLength =
   const { data, error } = await supabase
     .from('notes')
     .insert({ user_id: user.id, title, content, summary, summary_length: summaryLength, keywords, versions: [] })
-    .select('id')
+    .select('*')
     .single()
   if (error) throw error
-  return data.id
+  return mapNote(data)
 }
 
 export async function updateNote(id, { title, content, summary, summaryLength, keywords }) {

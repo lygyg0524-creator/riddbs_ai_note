@@ -77,9 +77,14 @@ function App() {
     setMobileTab('editor')
   }
 
+  const handleNoteSaved = (note) => {
+    setSelectedNote(note)
+  }
+
   const sharedEditorProps = {
     selectedNote,
     onEditorUpdate: handleEditorUpdate,
+    onSave: handleNoteSaved,
     summary,
     keywords,
     summaryLength,
