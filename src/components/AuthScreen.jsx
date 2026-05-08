@@ -32,16 +32,9 @@ function validatePassword(password) {
 }
 
 function RecoveryScreen({ onBack }) {
-  const [tab, setTab] = useState('id')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
-
-  function switchTab(next) {
-    setTab(next)
-    setMessage(null)
-    setEmail('')
-  }
 
   async function handlePasswordReset(e) {
     e.preventDefault()
@@ -71,77 +64,34 @@ function RecoveryScreen({ onBack }) {
           >
             ← 돌아가기
           </button>
-          <h1 className="text-base font-semibold text-[#e8e8e8]">계정 찾기</h1>
+          <h1 className="text-base font-semibold text-[#e8e8e8]">비밀번호 찾기</h1>
         </div>
-
-        {/* 언더라인 탭 */}
-        <div className="flex border-b border-[#373737] mb-6">
-          <button
-            onClick={() => switchTab('id')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              tab === 'id'
-                ? 'text-[#e8e8e8] border-b-2 border-[#2383e2] -mb-px'
-                : 'text-[#9b9a97] hover:text-[#e8e8e8]'
-            }`}
-          >
-            아이디 찾기
-          </button>
-          <button
-            onClick={() => switchTab('password')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              tab === 'password'
-                ? 'text-[#e8e8e8] border-b-2 border-[#2383e2] -mb-px'
-                : 'text-[#9b9a97] hover:text-[#e8e8e8]'
-            }`}
-          >
-            비밀번호 찾기
-          </button>
-        </div>
-
-        {tab === 'id' ? (
-          <div className="space-y-4">
-            <div className="bg-[#2f2f2f] rounded p-4 space-y-2">
-              <p className="text-sm font-medium text-[#e8e8e8]">이 앱의 아이디는 이메일 주소입니다</p>
-              <p className="text-xs text-[#9b9a97] leading-relaxed">
-                회원가입 시 입력한 이메일 주소가 곧 로그인 아이디입니다.
-                가입에 사용했을 것 같은 이메일 주소로 로그인을 시도해 보세요.
-              </p>
-            </div>
-            <button
-              onClick={onBack}
-              className="w-full py-2.5 bg-[#2383e2] hover:bg-[#1a6bc7] text-white text-sm font-medium rounded transition-colors"
-            >
-              로그인 화면으로 돌아가기
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handlePasswordReset} className="space-y-4">
-            <p className="text-xs text-[#9b9a97]">
-              가입한 이메일 주소를 입력하면 비밀번호 재설정 링크를 보내드립니다.
+        <form onSubmit={handlePasswordReset} className="space-y-4">
+          <p className="text-xs text-[#9b9a97]">
+            가입한 이메일 주소를 입력하면 비밀번호 재설정 링크를 보내드립니다.
+          </p>
+          <input
+            type="email"
+            placeholder="가입한 이메일 주소"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-4 py-2.5 rounded placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
+          />
+          {message && (
+            <p className={`text-sm ${message.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+              {message.text}
             </p>
-            <input
-              type="email"
-              placeholder="가입한 이메일 주소"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-4 py-2.5 rounded placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
-            />
-            {message && (
-              <p className={`text-sm ${message.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
-                {message.text}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-[#2383e2] hover:bg-[#1a6bc7] disabled:opacity-50 text-white text-sm font-medium rounded transition-colors"
-            >
-              {loading ? '처리 중...' : '재설정 링크 보내기'}
-            </button>
-          </form>
-        )}
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 bg-[#2383e2] hover:bg-[#1a6bc7] disabled:opacity-50 text-white text-sm font-medium rounded transition-colors"
+          >
+            {loading ? '처리 중...' : '재설정 링크 보내기'}
+          </button>
+        </form>
       </div>
     </div>
   )
@@ -292,7 +242,7 @@ function AuthScreen() {
               onClick={() => setShowRecovery(true)}
               className="w-full text-xs text-[#6b6b6b] hover:text-[#9b9a97] transition-colors pt-1"
             >
-              아이디 / 비밀번호 찾기
+              비밀번호 찾기
             </button>
           )}
         </form>
