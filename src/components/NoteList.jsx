@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import Fuse from 'fuse.js'
-import { getAllNotes, importNotes } from '../db/db'
+import { getAllNotes, importNotes, deleteNote } from '../db/db'
 
 function extractTextFromJSON(node, maxChars = 50) {
   if (!node) return ''
@@ -25,18 +25,25 @@ function formatDate(iso) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
 }
 
-function NoteCard({ note, isSelected, onClick }) {
+function NoteCard({ note, isSelected, onClick, onDelete }) {
   const preview = getPreview(note)
   const keywords = note.keywords?.slice(0, 3) ?? []
 
+  function handleDelete(e) {
+    e.stopPropagation()
+    if (window.confirm(`"${note.title || '제목 없음'}" 노트를 삭제할까요?`)) {
+      onDelete(note.id)
+    }
+  }
+
   return (
-    <button
+    <div
       onClick={() => onClick(note)}
-      className={`w-full text-left p-3 rounded-lg transition-colors ${
+      className={`group relative w-full text-left p-3 rounded-lg transition-colors cursor-pointer ${
         isSelected ? 'bg-blue-700' : 'hover:bg-gray-700'
       }`}
     >
-      <p className="font-medium text-white truncate text-sm">
+      <p className="font-medium text-white truncate text-sm pr-6">
         {note.title || '제목 없음'}
       </p>
       {preview && (
@@ -52,11 +59,18 @@ function NoteCard({ note, isSelected, onClick }) {
         </div>
       )}
       <p className="text-xs text-gray-500 mt-1.5">{formatDate(note.updatedAt)}</p>
-    </button>
+      <button
+        onClick={handleDelete}
+        className="absolute top-2.5 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity text-sm leading-none p-0.5"
+        title="삭제"
+      >
+        ×
+      </button>
+    </div>
   )
 }
 
-function NoteList({ notes = [], selectedNote, onSelect, userEmail, onLogout }) {
+function NoteList({ notes = [], selectedNote, onSelect, onDelete, userEmail, onLogout }) {
   const [query, setQuery] = useState('')
   const importRef = useRef(null)
 
@@ -187,6 +201,7 @@ function NoteList({ notes = [], selectedNote, onSelect, userEmail, onLogout }) {
               note={note}
               isSelected={selectedNote?.id === note.id}
               onClick={onSelect}
+              onDelete={onDelete}
             />
           ))
         )}

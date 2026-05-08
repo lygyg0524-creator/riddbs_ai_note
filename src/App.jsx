@@ -7,6 +7,7 @@ import NoteList from './components/NoteList'
 import SummaryPanel from './components/SummaryPanel'
 import AuthScreen from './components/AuthScreen'
 import { supabase } from './lib/supabase'
+import { deleteNote } from './db/db'
 
 const TABS = [
   { id: 'list',    label: '목록' },
@@ -81,6 +82,11 @@ function App() {
     setSelectedNote(note)
   }
 
+  const handleDelete = async (id) => {
+    await deleteNote(id)
+    if (selectedNote?.id === id) setSelectedNote(null)
+  }
+
   const sharedEditorProps = {
     selectedNote,
     onEditorUpdate: handleEditorUpdate,
@@ -106,7 +112,7 @@ function App() {
 
   const mobilePanel = () => {
     if (mobileTab === 'list')
-      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} userEmail={user.email} onLogout={handleLogout} />
+      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} userEmail={user.email} onLogout={handleLogout} />
     if (mobileTab === 'editor')
       return (
         <div className="p-4 h-full">
@@ -123,7 +129,7 @@ function App() {
         className="hidden md:grid flex-1 overflow-hidden"
         style={{ gridTemplateColumns: '25% 45% 30%' }}
       >
-        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} userEmail={user.email} onLogout={handleLogout} />
+        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} userEmail={user.email} onLogout={handleLogout} />
         <div className="p-4 overflow-y-auto">
           <NoteEditor {...sharedEditorProps} />
         </div>
