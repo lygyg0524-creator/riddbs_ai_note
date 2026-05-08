@@ -31,8 +31,120 @@ function validatePassword(password) {
   return null
 }
 
+function RecoveryScreen({ onBack }) {
+  const [tab, setTab] = useState('id')
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState(null)
+
+  function switchTab(next) {
+    setTab(next)
+    setMessage(null)
+    setEmail('')
+  }
+
+  async function handlePasswordReset(e) {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    })
+
+    if (error) {
+      setMessage({ type: 'error', text: error.message })
+    } else {
+      setMessage({ type: 'success', text: '비밀번호 재설정 링크를 이메일로 발송했습니다. 받은 편지함을 확인해 주세요.' })
+      setEmail('')
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-gray-800 rounded-2xl p-8 shadow-2xl">
+        <div className="flex items-center mb-6">
+          <button
+            onClick={onBack}
+            className="text-gray-400 hover:text-white text-sm mr-3 transition-colors"
+          >
+            ← 돌아가기
+          </button>
+          <h1 className="text-lg font-bold text-white">계정 찾기</h1>
+        </div>
+
+        <div className="flex bg-gray-700 rounded-lg p-1 mb-6">
+          <button
+            onClick={() => switchTab('id')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              tab === 'id' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            아이디 찾기
+          </button>
+          <button
+            onClick={() => switchTab('password')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              tab === 'password' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            비밀번호 찾기
+          </button>
+        </div>
+
+        {tab === 'id' ? (
+          <div className="space-y-4">
+            <div className="bg-gray-700 rounded-lg p-4 space-y-2">
+              <p className="text-sm font-medium text-white">이 앱의 아이디는 이메일 주소입니다</p>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                회원가입 시 입력한 이메일 주소가 곧 로그인 아이디입니다.
+                가입에 사용했을 것 같은 이메일 주소로 로그인을 시도해 보세요.
+              </p>
+            </div>
+            <button
+              onClick={onBack}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              로그인 화면으로 돌아가기
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handlePasswordReset} className="space-y-4">
+            <p className="text-xs text-gray-400">
+              가입한 이메일 주소를 입력하면 비밀번호 재설정 링크를 보내드립니다.
+            </p>
+            <input
+              type="email"
+              placeholder="가입한 이메일 주소"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="w-full bg-gray-700 text-white text-sm px-4 py-3 rounded-lg placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {message && (
+              <p className={`text-sm ${message.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                {message.text}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              {loading ? '처리 중...' : '재설정 링크 보내기'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AuthScreen() {
   const [mode, setMode] = useState('login')
+  const [showRecovery, setShowRecovery] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -83,6 +195,10 @@ function AuthScreen() {
       lockUntil = 0
     }
     setLoading(false)
+  }
+
+  if (showRecovery) {
+    return <RecoveryScreen onBack={() => setShowRecovery(false)} />
   }
 
   const remainingAttempts = MAX_ATTEMPTS - failedCount
@@ -158,6 +274,15 @@ function AuthScreen() {
           >
             {loading ? '처리 중...' : mode === 'login' ? '로그인' : '회원가입'}
           </button>
+          {mode === 'login' && (
+            <button
+              type="button"
+              onClick={() => setShowRecovery(true)}
+              className="w-full text-xs text-gray-500 hover:text-gray-300 transition-colors pt-1"
+            >
+              아이디 / 비밀번호 찾기
+            </button>
+          )}
         </form>
       </div>
     </div>
