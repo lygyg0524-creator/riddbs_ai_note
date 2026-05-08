@@ -123,7 +123,7 @@ function App() {
 
   const mobilePanel = () => {
     if (mobileTab === 'list')
-      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.email} onLogout={handleLogout} />
+      return <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.user_metadata?.nickname ?? user.email} onLogout={handleLogout} />
     if (mobileTab === 'editor')
       return (
         <div className="h-full">
@@ -150,7 +150,7 @@ function App() {
         className="hidden md:grid flex-1 overflow-hidden"
         style={{ gridTemplateColumns: '25% 45% 30%' }}
       >
-        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.email} onLogout={handleLogout} />
+        <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.user_metadata?.nickname ?? user.email} onLogout={handleLogout} />
         <div className="overflow-y-auto">
           {showEditor
             ? <NoteEditor {...sharedEditorProps} />

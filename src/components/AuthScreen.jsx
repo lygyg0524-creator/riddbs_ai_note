@@ -103,6 +103,7 @@ function AuthScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [nickname, setNickname] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
 
@@ -111,6 +112,7 @@ function AuthScreen() {
     setMessage(null)
     setPassword('')
     setPasswordConfirm('')
+    setNickname('')
   }
 
   async function handleSubmit(e) {
@@ -125,6 +127,14 @@ function AuthScreen() {
     }
 
     if (mode === 'signup') {
+      if (!nickname.trim()) {
+        setMessage({ type: 'error', text: '닉네임을 입력해주세요' })
+        return
+      }
+      if (nickname.trim().length > 20) {
+        setMessage({ type: 'error', text: '닉네임은 최대 20자까지 입력할 수 있습니다' })
+        return
+      }
       const pwError = validatePassword(password)
       if (pwError) { setMessage({ type: 'error', text: pwError }); return }
       if (password !== passwordConfirm) {
@@ -138,7 +148,7 @@ function AuthScreen() {
     const { error } =
       mode === 'login'
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signUp({ email, password, options: { data: { nickname: nickname.trim() } } })
 
     if (error) {
       recordFailure()
@@ -209,15 +219,27 @@ function AuthScreen() {
             />
           </div>
           {mode === 'signup' && (
-            <input
-              type="password"
-              placeholder="비밀번호 확인"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              required
-              autoComplete="new-password"
-              className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-4 py-2.5 rounded placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
-            />
+            <>
+              <input
+                type="password"
+                placeholder="비밀번호 확인"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                required
+                autoComplete="new-password"
+                className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-4 py-2.5 rounded placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
+              />
+              <input
+                type="text"
+                placeholder="닉네임 (최대 20자)"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                required
+                maxLength={20}
+                autoComplete="nickname"
+                className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-4 py-2.5 rounded placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
+              />
+            </>
           )}
           {message && (
             <p className={`text-sm ${message.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
