@@ -6,10 +6,15 @@ function mapNote(n) {
   return { ...rest, summaryLength: summary_length }
 }
 
-export function useNotes() {
+export function useNotes(userId) {
   const [notes, setNotes] = useState(null)
 
   useEffect(() => {
+    if (!userId) {
+      setNotes([])
+      return
+    }
+
     async function fetchNotes() {
       const { data } = await supabase
         .from('notes')
@@ -26,7 +31,7 @@ export function useNotes() {
       .subscribe()
 
     return () => supabase.removeChannel(channel)
-  }, [])
+  }, [userId])
 
   return notes
 }

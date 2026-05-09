@@ -17,7 +17,7 @@ const TABS = [
 
 function App() {
   const user = useAuth()
-  const notes = useNotes()
+  const notes = useNotes(user?.id)
   const [selectedNote, setSelectedNote] = useState(null)
   const [showEditor, setShowEditor] = useState(false)
   const [mobileTab, setMobileTab] = useState('list')
