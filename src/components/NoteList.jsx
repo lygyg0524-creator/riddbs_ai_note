@@ -25,6 +25,15 @@ function formatDate(iso) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
 }
 
+function NoteIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  )
+}
+
 function NoteCard({ note, isSelected, onClick, onDelete }) {
   function handleDelete(e) {
     e.stopPropagation()
@@ -33,23 +42,41 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
     }
   }
 
+  const preview = getPreview(note)
+
   return (
     <div
       onClick={() => onClick(note)}
-      className={`group relative flex items-center gap-2 w-full text-left px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
-        isSelected ? 'bg-[#2f2f2f] text-white' : 'text-[#e8e8e8] hover:bg-[#2f2f2f]'
+      className={`group relative w-full text-left px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-150 ${
+        isSelected
+          ? 'bg-white/[0.08] border border-white/[0.1]'
+          : 'border border-transparent hover:bg-white/[0.04] hover:border-white/[0.06]'
       }`}
     >
-      <span className="text-[#9b9a97] shrink-0 text-sm">📄</span>
-      <span className="truncate text-sm pr-6">
-        {note.title || '제목 없음'}
-      </span>
+      <div className="flex items-start gap-2.5 pr-6">
+        <span className={`mt-0.5 shrink-0 ${isSelected ? 'text-[#6366f1]' : 'text-[#4a4a4a]'}`}>
+          <NoteIcon />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className={`truncate text-xs font-medium leading-snug ${isSelected ? 'text-[#f0f0f0]' : 'text-[#8a8a8a] group-hover:text-[#f0f0f0]'} transition-colors duration-150`}>
+            {note.title || '제목 없음'}
+          </p>
+          {preview && (
+            <p className="truncate text-xs text-[#4a4a4a] mt-0.5 leading-snug">
+              {preview}
+            </p>
+          )}
+          <p className="text-[10px] text-[#4a4a4a] mt-1">
+            {formatDate(note.updatedAt || note.createdAt)}
+          </p>
+        </div>
+      </div>
       <button
         onClick={handleDelete}
-        className="absolute right-2 opacity-0 group-hover:opacity-100 text-[#6b6b6b] hover:text-red-400 transition-opacity p-1 rounded-sm hover:bg-[#373737]"
+        className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 text-[#4a4a4a] hover:text-red-400 transition-all duration-150 p-1 rounded-md hover:bg-red-500/10"
         title="삭제"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="3 6 5 6 21 6" />
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
           <path d="M10 11v6" />
@@ -80,56 +107,24 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      // 파일 크기 제한 (5MB) — DoS 방지
       const MAX_SIZE = 5 * 1024 * 1024
-      if (file.size > MAX_SIZE)
-        throw new Error(`파일 크기가 너무 큽니다 (최대 5MB, 현재 ${(file.size / 1024 / 1024).toFixed(1)}MB)`)
-
-      // 확장자 검증 — 타입 스푸핑 방지
+      if (file.size > MAX_SIZE) throw new Error(`파일 크기가 너무 큽니다 (최대 5MB)`)
       const ext = file.name.split('.').pop().toLowerCase()
-      if (ext !== 'json')
-        throw new Error('JSON 파일(.json)만 가져올 수 있습니다')
-
-      // MIME 타입 이중 검증 (OS마다 다를 수 있어 빈 문자열도 허용)
+      if (ext !== 'json') throw new Error('JSON 파일(.json)만 가져올 수 있습니다')
       const ALLOWED_MIME = ['application/json', 'text/plain', 'text/json', '']
-      if (!ALLOWED_MIME.includes(file.type))
-        throw new Error('지원하지 않는 파일 형식입니다')
-
+      if (!ALLOWED_MIME.includes(file.type)) throw new Error('지원하지 않는 파일 형식입니다')
       const text = await file.text()
-
-      // 파싱 전 구조 사전 검사 — 비정상 파일 조기 차단
-      if (!text.trim().startsWith('['))
-        throw new Error('배열 형식의 JSON 파일이 아닙니다')
-
+      if (!text.trim().startsWith('[')) throw new Error('배열 형식의 JSON 파일이 아닙니다')
       let data
-      try {
-        data = JSON.parse(text)
-      } catch {
-        throw new Error('JSON 파싱 실패. 파일이 손상되었거나 형식이 올바르지 않습니다')
-      }
-
+      try { data = JSON.parse(text) } catch { throw new Error('JSON 파싱 실패') }
       if (!Array.isArray(data)) throw new Error('배열 형식이 아닙니다')
-
-      // 배열 항목 수 제한 (500개) — 대량 데이터 DoS 방지
-      if (data.length > 500)
-        throw new Error(`한 번에 최대 500개까지 가져올 수 있습니다 (현재 ${data.length}개)`)
-
+      if (data.length > 500) throw new Error(`한 번에 최대 500개까지 가져올 수 있습니다`)
       const ALLOWED = ['id', 'title', 'content', 'summary', 'summaryLength', 'keywords', 'versions', 'createdAt', 'updatedAt']
       const cleaned = data.map((note, i) => {
-        // 타입 검증
         if (typeof note !== 'object' || note === null) throw new Error(`${i + 1}번째 항목이 올바르지 않습니다`)
         if (typeof note.content !== 'object' || note.content === null) throw new Error(`${i + 1}번째 노트에 content가 없거나 올바르지 않습니다`)
         if (note.title !== undefined && typeof note.title !== 'string') throw new Error(`${i + 1}번째 노트의 title이 올바르지 않습니다`)
-        if (note.summary !== undefined && note.summary !== null && typeof note.summary !== 'string') throw new Error(`${i + 1}번째 노트의 summary가 올바르지 않습니다`)
-        if (note.keywords !== undefined && !Array.isArray(note.keywords)) throw new Error(`${i + 1}번째 노트의 keywords가 올바르지 않습니다`)
-        if (note.versions !== undefined && !Array.isArray(note.versions)) throw new Error(`${i + 1}번째 노트의 versions가 올바르지 않습니다`)
-
-        // 필드 길이 제한 — 대용량 페이로드 공격 방지
-        if (note.title?.length > 200) throw new Error(`${i + 1}번째 노트의 제목이 너무 깁니다 (최대 200자)`)
-        if (note.summary?.length > 5000) throw new Error(`${i + 1}번째 노트의 요약이 너무 깁니다 (최대 5000자)`)
-        if (note.keywords?.length > 20) throw new Error(`${i + 1}번째 노트의 키워드가 너무 많습니다 (최대 20개)`)
-
-        // 허용 필드만 추출 (prototype pollution 방지), versions는 최대 10개로 자름
+        if (note.title?.length > 200) throw new Error(`${i + 1}번째 노트의 제목이 너무 깁니다`)
         const obj = Object.fromEntries(ALLOWED.filter(k => note[k] !== undefined).map(k => [k, note[k]]))
         if (obj.versions) obj.versions = obj.versions.slice(0, 10)
         return obj
@@ -142,62 +137,75 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
     }
   }
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(notes, {
-        keys: ['title', 'summary', 'keywords'],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [notes]
-  )
-
-  const filtered = useMemo(
-    () => (query.trim() ? fuse.search(query).map((r) => r.item) : notes),
-    [fuse, query, notes]
-  )
+  const fuse = useMemo(() => new Fuse(notes, { keys: ['title', 'summary', 'keywords'], threshold: 0.4, ignoreLocation: true }), [notes])
+  const filtered = useMemo(() => (query.trim() ? fuse.search(query).map((r) => r.item) : notes), [fuse, query, notes])
 
   return (
-    <div className="h-full flex flex-col bg-[#202020] border-r border-[#373737]">
-      <div className="px-3 pt-3 pb-2 border-b border-[#373737]">
+    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]">
+      {/* 헤더 */}
+      <div className="px-3 pt-4 pb-3 border-b border-white/[0.06]">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold text-[#9b9a97] uppercase tracking-wider">노트 목록</h2>
+          <span className="text-[10px] font-semibold text-[#4a4a4a] uppercase tracking-widest">노트</span>
           <button
             onClick={onLogout}
-            className="text-xs text-[#6b6b6b] hover:text-[#9b9a97] transition-colors"
+            className="flex items-center gap-1 text-[10px] text-[#4a4a4a] hover:text-[#8a8a8a] transition-colors duration-150"
             title="로그아웃"
           >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
             로그아웃
           </button>
         </div>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="검색..."
-          className="w-full bg-[#2f2f2f] text-[#e8e8e8] text-sm px-3 py-1.5 rounded-sm placeholder-[#6b6b6b] outline-none focus:ring-1 focus:ring-[#2383e2]"
-        />
+
+        {/* 검색 */}
+        <div className="relative">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#4a4a4a]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="검색..."
+            className="w-full bg-[#0a0a0a] border border-white/[0.06] text-[#f0f0f0] text-xs pl-7 pr-3 py-2 rounded-lg placeholder-[#4a4a4a] outline-none focus:border-[#6366f1]/40 focus:ring-1 focus:ring-[#6366f1]/10 transition-all duration-200"
+          />
+        </div>
+
         {userEmail && (
-          <p className="text-xs text-[#6b6b6b] truncate mt-2">{userEmail}</p>
+          <p className="text-[10px] text-[#4a4a4a] truncate mt-2.5 px-0.5">{userEmail}</p>
         )}
       </div>
 
-      {/* 새 노트 버튼 */}
-      <div className="px-3 py-2 border-b border-[#373737]">
+      {/* 새 노트 */}
+      <div className="px-3 py-2.5 border-b border-white/[0.06]">
         <button
           onClick={onNewNote}
-          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-sm text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] text-sm transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f0f0f0] text-xs transition-all duration-150 border border-transparent hover:border-white/[0.06]"
         >
-          <span className="text-base leading-none">+</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
           <span>새 페이지</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-1 px-2 space-y-0.5">
+      {/* 노트 목록 */}
+      <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
         {filtered.length === 0 ? (
-          <p className="text-[#6b6b6b] text-xs text-center py-8">
-            {query ? '일치하는 노트가 없습니다' : '저장된 노트가 없습니다'}
-          </p>
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <p className="text-[#4a4a4a] text-xs text-center">
+              {query ? '일치하는 노트가 없습니다' : '저장된 노트가 없습니다'}
+            </p>
+          </div>
         ) : (
           filtered.map((note) => (
             <NoteCard
@@ -211,14 +219,26 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
         )}
       </div>
 
-      <div className="px-3 py-2 border-t border-[#373737] flex gap-2 shrink-0">
+      {/* 하단 도구 */}
+      <div className="px-3 py-2.5 border-t border-white/[0.06] flex gap-1.5 shrink-0">
         <button
           onClick={handleExport}
-          className="flex-1 py-1.5 text-xs text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] rounded-sm transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#4a4a4a] hover:text-[#8a8a8a] hover:bg-white/[0.04] rounded-md transition-all duration-150"
         >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
           내보내기
         </button>
-        <label className="flex-1 py-1.5 text-xs text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8] rounded-sm transition-colors text-center cursor-pointer">
+        <div className="w-px bg-white/[0.06]" />
+        <label className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#4a4a4a] hover:text-[#8a8a8a] hover:bg-white/[0.04] rounded-md transition-all duration-150 cursor-pointer">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
           가져오기
           <input type="file" accept=".json" className="hidden" ref={importRef} onChange={handleImport} />
         </label>

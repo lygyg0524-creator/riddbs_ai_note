@@ -6,10 +6,10 @@ function ToolbarBtn({ onClick, isActive, title, children }) {
         onClick()
       }}
       title={title}
-      className={`px-2 py-1 rounded-sm text-sm font-medium transition-colors ${
+      className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
         isActive
-          ? 'bg-[#2383e2] text-white'
-          : 'text-[#9b9a97] hover:bg-[#2f2f2f] hover:text-[#e8e8e8]'
+          ? 'bg-[#6366f1] text-white shadow-[0_1px_4px_rgba(99,102,241,0.3)]'
+          : 'text-[#4a4a4a] hover:bg-white/[0.05] hover:text-[#f0f0f0]'
       }`}
     >
       {children}
@@ -21,7 +21,7 @@ function Toolbar({ editor }) {
   if (!editor) return null
 
   return (
-    <div className="flex items-center gap-0.5 px-3 py-1.5 flex-wrap">
+    <div className="flex items-center gap-0.5 px-3 py-2 flex-wrap">
       <ToolbarBtn
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
@@ -38,7 +38,7 @@ function Toolbar({ editor }) {
         <em>I</em>
       </ToolbarBtn>
 
-      <div className="w-px h-4 bg-[#373737] mx-1" />
+      <div className="w-px h-3.5 bg-white/[0.08] mx-1" />
 
       <ToolbarBtn
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -56,7 +56,7 @@ function Toolbar({ editor }) {
         H2
       </ToolbarBtn>
 
-      <div className="w-px h-4 bg-[#373737] mx-1" />
+      <div className="w-px h-3.5 bg-white/[0.08] mx-1" />
 
       <ToolbarBtn
         onClick={() => editor.chain().focus().toggleBulletList().run()}

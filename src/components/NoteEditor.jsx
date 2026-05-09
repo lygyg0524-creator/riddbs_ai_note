@@ -7,19 +7,16 @@ import { saveNote, updateNote } from '../db/db'
 function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, summaryLength, restoreContent, onRestoreDone }) {
   const [title, setTitle] = useState('')
   const [saveError, setSaveError] = useState(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const onEditorUpdateRef = useRef(onEditorUpdate)
 
-  useEffect(() => {
-    onEditorUpdateRef.current = onEditorUpdate
-  }, [onEditorUpdate])
+  useEffect(() => { onEditorUpdateRef.current = onEditorUpdate }, [onEditorUpdate])
 
   const editor = useEditor({
     extensions: [StarterKit],
     content: '',
     editorProps: {
-      attributes: {
-        class: 'outline-none min-h-[400px] px-16 py-6 text-[#e8e8e8] prose-editor',
-      },
+      attributes: { class: 'outline-none min-h-[400px] px-16 py-6 text-[#e8e8e8] prose-editor' },
     },
     onUpdate: ({ editor }) => {
       const text = editor.getText({ blockSeparator: '\n\n' })
@@ -27,14 +24,12 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
     },
   })
 
-  // 버전 복원 요청 처리
   useEffect(() => {
     if (!editor || !restoreContent) return
     editor.commands.setContent(restoreContent)
     onRestoreDone?.()
   }, [editor, restoreContent])
 
-  // 선택된 노트 변경 시 에디터 동기화
   useEffect(() => {
     if (!editor) return
     if (selectedNote) {
@@ -49,6 +44,7 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
   const handleSave = async () => {
     if (!editor) return
     setSaveError(null)
+    setSaveSuccess(false)
     const content = editor.getJSON()
     try {
       if (selectedNote?.id) {
@@ -63,15 +59,17 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
         const newNote = await saveNote({ title, content })
         onSave?.(newNote)
       }
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
       setSaveError(err.message)
     }
   }
 
   return (
-    <div className="bg-[#191919] flex flex-col h-full">
+    <div className="bg-[#0d0d0d] flex flex-col h-full">
       {/* 제목 영역 */}
-      <div className="px-16 pt-10 pb-4">
+      <div className="px-16 pt-12 pb-4">
         <input
           type="text"
           value={title}
@@ -79,22 +77,30 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
           placeholder="제목 없음"
           maxLength={200}
           autoComplete="off"
-          className="w-full bg-transparent text-[#e8e8e8] text-3xl font-bold placeholder-[#373737] outline-none"
+          className="w-full bg-transparent text-[#f0f0f0] text-[1.875rem] font-bold placeholder-[#2a2a2a] outline-none leading-tight tracking-tight"
         />
       </div>
 
-      {/* 툴바 + 저장 버튼 행 */}
-      <div className="flex items-center justify-between border-b border-[#373737]">
+      {/* 툴바 + 저장 */}
+      <div className="flex items-center justify-between border-b border-white/[0.06]">
         <Toolbar editor={editor} />
         <div className="flex items-center gap-3 px-4">
           {saveError && (
-            <span className="text-xs text-red-400 truncate max-w-[180px]" title={saveError}>
+            <span className="text-xs text-red-400/80 truncate max-w-[180px]" title={saveError}>
               저장 실패: {saveError}
+            </span>
+          )}
+          {saveSuccess && (
+            <span className="flex items-center gap-1 text-xs text-emerald-500/70">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              저장됨
             </span>
           )}
           <button
             onClick={handleSave}
-            className="px-3 py-1 bg-[#2383e2] hover:bg-[#1a6bc7] text-white text-xs font-medium rounded-sm transition-colors"
+            className="px-3.5 py-1.5 bg-[#6366f1] hover:bg-[#4f52d1] text-white text-xs font-medium rounded-md transition-all duration-200 shadow-[0_2px_8px_rgba(99,102,241,0.25)]"
           >
             저장
           </button>
