@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import Fuse from 'fuse.js'
-import { getAllNotes, importNotes, deleteNote } from '../db/db'
+import { saveNote } from '../db/db'
+import { parseFile } from '../lib/fileParser'
 
 function extractTextFromJSON(node, maxChars = 50) {
   if (!node) return ''
@@ -90,49 +91,29 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
 
 function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, userEmail, onLogout }) {
   const [query, setQuery] = useState('')
+  const [importing, setImporting] = useState(false)
   const importRef = useRef(null)
-
-  async function handleExport() {
-    const data = await getAllNotes()
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'notes-backup.json'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
 
   async function handleImport(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    setImporting(true)
     try {
-      const MAX_SIZE = 5 * 1024 * 1024
-      if (file.size > MAX_SIZE) throw new Error(`파일 크기가 너무 큽니다 (최대 5MB)`)
-      const ext = file.name.split('.').pop().toLowerCase()
-      if (ext !== 'json') throw new Error('JSON 파일(.json)만 가져올 수 있습니다')
-      const ALLOWED_MIME = ['application/json', 'text/plain', 'text/json', '']
-      if (!ALLOWED_MIME.includes(file.type)) throw new Error('지원하지 않는 파일 형식입니다')
-      const text = await file.text()
-      if (!text.trim().startsWith('[')) throw new Error('배열 형식의 JSON 파일이 아닙니다')
-      let data
-      try { data = JSON.parse(text) } catch { throw new Error('JSON 파싱 실패') }
-      if (!Array.isArray(data)) throw new Error('배열 형식이 아닙니다')
-      if (data.length > 500) throw new Error(`한 번에 최대 500개까지 가져올 수 있습니다`)
-      const ALLOWED = ['id', 'title', 'content', 'summary', 'summaryLength', 'keywords', 'versions', 'createdAt', 'updatedAt']
-      const cleaned = data.map((note, i) => {
-        if (typeof note !== 'object' || note === null) throw new Error(`${i + 1}번째 항목이 올바르지 않습니다`)
-        if (typeof note.content !== 'object' || note.content === null) throw new Error(`${i + 1}번째 노트에 content가 없거나 올바르지 않습니다`)
-        if (note.title !== undefined && typeof note.title !== 'string') throw new Error(`${i + 1}번째 노트의 title이 올바르지 않습니다`)
-        if (note.title?.length > 200) throw new Error(`${i + 1}번째 노트의 제목이 너무 깁니다`)
-        const obj = Object.fromEntries(ALLOWED.filter(k => note[k] !== undefined).map(k => [k, note[k]]))
-        if (obj.versions) obj.versions = obj.versions.slice(0, 10)
-        return obj
-      })
-      await importNotes(cleaned)
+      const MAX_SIZE = 20 * 1024 * 1024
+      if (file.size > MAX_SIZE) throw new Error('파일 크기가 너무 큽니다 (최대 20MB)')
+
+      const name = file.name.toLowerCase()
+      const allowed = ['.hwp', '.hwpx', '.doc', '.pdf']
+      if (!allowed.some(ext => name.endsWith(ext))) {
+        throw new Error('HWP, HWPX, DOC, PDF 파일만 가져올 수 있습니다')
+      }
+
+      const { title, content } = await parseFile(file)
+      await saveNote({ title, content })
     } catch (err) {
       alert('가져오기 실패: ' + err.message)
     } finally {
+      setImporting(false)
       if (importRef.current) importRef.current.value = ''
     }
   }
@@ -220,27 +201,25 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
       </div>
 
       {/* 하단 도구 */}
-      <div className="px-3 py-2.5 border-t border-[#e8e8e6] flex gap-1.5 shrink-0">
-        <button
-          onClick={handleExport}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white rounded-md transition-all duration-150"
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          내보내기
-        </button>
-        <div className="w-px bg-[#e8e8e6]" />
-        <label className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white rounded-md transition-all duration-150 cursor-pointer">
+      <div className="px-3 py-2.5 border-t border-[#e8e8e6] shrink-0">
+        <label className={`flex items-center justify-center gap-1.5 py-1.5 text-[11px] rounded-md transition-all duration-150 cursor-pointer w-full ${
+          importing
+            ? 'text-[#9b9a97] opacity-60 pointer-events-none'
+            : 'text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white'
+        }`}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          가져오기
-          <input type="file" accept=".json" className="hidden" ref={importRef} onChange={handleImport} />
+          {importing ? '가져오는 중...' : '가져오기 (HWP · HWPX · DOC · PDF)'}
+          <input
+            type="file"
+            accept=".hwp,.hwpx,.doc,.pdf"
+            className="hidden"
+            ref={importRef}
+            onChange={handleImport}
+          />
         </label>
       </div>
     </div>
