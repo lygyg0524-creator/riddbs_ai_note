@@ -36,7 +36,7 @@ function SummaryPanel({
 
   if (!selectedNote) {
     return (
-      <div className="h-full bg-white border-l border-[#e8e8e6] flex items-center justify-center p-4">
+      <div className="h-full bg-[#f7f6f3] border-l border-[#e8e8e6] flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#f7f6f3] border border-[#e8e8e6] flex items-center justify-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9b9a97" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -51,7 +51,7 @@ function SummaryPanel({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white border-l border-[#e8e8e6]">
+    <div className="h-full flex flex-col bg-[#f7f6f3] border-l border-[#e8e8e6]">
       {/* AI 요약 컨트롤 */}
       <div className="px-4 py-4 border-b border-[#e8e8e6]">
         <div className="flex items-center gap-1.5 mb-3">
