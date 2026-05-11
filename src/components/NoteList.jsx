@@ -49,31 +49,31 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
       onClick={() => onClick(note)}
       className={`group relative w-full text-left px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-150 ${
         isSelected
-          ? 'bg-white/[0.08] border border-white/[0.1]'
-          : 'border border-transparent hover:bg-white/[0.04] hover:border-white/[0.06]'
+          ? 'bg-[#f1f0ee] border border-[#e8e8e6]'
+          : 'border border-transparent hover:bg-[#f7f6f3] hover:border-[#e8e8e6]'
       }`}
     >
       <div className="flex items-start gap-2.5 pr-6">
-        <span className={`mt-0.5 shrink-0 ${isSelected ? 'text-[#6366f1]' : 'text-[#4a4a4a]'}`}>
+        <span className={`mt-0.5 shrink-0 ${isSelected ? 'text-[#37352f]' : 'text-[#9b9a97]'}`}>
           <NoteIcon />
         </span>
         <div className="min-w-0 flex-1">
-          <p className={`truncate text-xs font-medium leading-snug ${isSelected ? 'text-[#f0f0f0]' : 'text-[#8a8a8a] group-hover:text-[#f0f0f0]'} transition-colors duration-150`}>
+          <p className={`truncate text-xs font-medium leading-snug ${isSelected ? 'text-[#37352f]' : 'text-[#6b6a67] group-hover:text-[#37352f]'} transition-colors duration-150`}>
             {note.title || '제목 없음'}
           </p>
           {preview && (
-            <p className="truncate text-xs text-[#4a4a4a] mt-0.5 leading-snug">
+            <p className="truncate text-xs text-[#9b9a97] mt-0.5 leading-snug">
               {preview}
             </p>
           )}
-          <p className="text-[10px] text-[#4a4a4a] mt-1">
+          <p className="text-[10px] text-[#9b9a97] mt-1">
             {formatDate(note.updatedAt || note.createdAt)}
           </p>
         </div>
       </div>
       <button
         onClick={handleDelete}
-        className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 text-[#4a4a4a] hover:text-red-400 transition-all duration-150 p-1 rounded-md hover:bg-red-500/10"
+        className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 text-[#9b9a97] hover:text-red-500 transition-all duration-150 p-1 rounded-md hover:bg-red-50"
         title="삭제"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -141,14 +141,14 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
   const filtered = useMemo(() => (query.trim() ? fuse.search(query).map((r) => r.item) : notes), [fuse, query, notes])
 
   return (
-    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]">
+    <div className="h-full flex flex-col bg-[#f7f6f3] border-r border-[#e8e8e6]">
       {/* 헤더 */}
-      <div className="px-3 pt-4 pb-3 border-b border-white/[0.06]">
+      <div className="px-3 pt-4 pb-3 border-b border-[#e8e8e6]">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[10px] font-semibold text-[#4a4a4a] uppercase tracking-widest">노트</span>
+          <span className="text-[10px] font-semibold text-[#9b9a97] uppercase tracking-widest">노트</span>
           <button
             onClick={onLogout}
-            className="flex items-center gap-1 text-[10px] text-[#4a4a4a] hover:text-[#8a8a8a] transition-colors duration-150"
+            className="flex items-center gap-1 text-[10px] text-[#9b9a97] hover:text-[#37352f] transition-colors duration-150"
             title="로그아웃"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -162,7 +162,7 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
 
         {/* 검색 */}
         <div className="relative">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#4a4a4a]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9b9a97]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -171,20 +171,20 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="검색..."
-            className="w-full bg-[#0a0a0a] border border-white/[0.06] text-[#f0f0f0] text-xs pl-7 pr-3 py-2 rounded-lg placeholder-[#4a4a4a] outline-none focus:border-[#6366f1]/40 focus:ring-1 focus:ring-[#6366f1]/10 transition-all duration-200"
+            className="w-full bg-white border border-[#e8e8e6] text-[#37352f] text-xs pl-7 pr-3 py-2 rounded-lg placeholder-[#b4b4af] outline-none focus:border-[#a0a0ff] focus:ring-1 focus:ring-[#6366f1]/10 transition-all duration-150"
           />
         </div>
 
         {userEmail && (
-          <p className="text-[10px] text-[#4a4a4a] truncate mt-2.5 px-0.5">{userEmail}</p>
+          <p className="text-[10px] text-[#9b9a97] truncate mt-2.5 px-0.5">{userEmail}</p>
         )}
       </div>
 
       {/* 새 노트 */}
-      <div className="px-3 py-2.5 border-b border-white/[0.06]">
+      <div className="px-3 py-2.5 border-b border-[#e8e8e6]">
         <button
           onClick={onNewNote}
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f0f0f0] text-xs transition-all duration-150 border border-transparent hover:border-white/[0.06]"
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[#6b6a67] hover:bg-white hover:text-[#37352f] text-xs transition-all duration-150 border border-transparent hover:border-[#e8e8e6]"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -198,11 +198,11 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
       <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b9a97" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
-            <p className="text-[#4a4a4a] text-xs text-center">
+            <p className="text-[#9b9a97] text-xs text-center">
               {query ? '일치하는 노트가 없습니다' : '저장된 노트가 없습니다'}
             </p>
           </div>
@@ -220,10 +220,10 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
       </div>
 
       {/* 하단 도구 */}
-      <div className="px-3 py-2.5 border-t border-white/[0.06] flex gap-1.5 shrink-0">
+      <div className="px-3 py-2.5 border-t border-[#e8e8e6] flex gap-1.5 shrink-0">
         <button
           onClick={handleExport}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#4a4a4a] hover:text-[#8a8a8a] hover:bg-white/[0.04] rounded-md transition-all duration-150"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white rounded-md transition-all duration-150"
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -232,8 +232,8 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
           </svg>
           내보내기
         </button>
-        <div className="w-px bg-white/[0.06]" />
-        <label className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#4a4a4a] hover:text-[#8a8a8a] hover:bg-white/[0.04] rounded-md transition-all duration-150 cursor-pointer">
+        <div className="w-px bg-[#e8e8e6]" />
+        <label className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white rounded-md transition-all duration-150 cursor-pointer">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />

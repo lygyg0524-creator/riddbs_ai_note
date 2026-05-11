@@ -60,8 +60,8 @@ function App() {
 
   if (user === undefined) {
     return (
-      <div className="h-screen bg-[#191919] flex items-center justify-center">
-        <p className="text-[#6b6b6b] text-sm">로딩 중...</p>
+      <div className="h-screen bg-[#f7f6f3] flex items-center justify-center">
+        <p className="text-[#9b9a97] text-sm">로딩 중...</p>
       </div>
     )
   }
@@ -130,7 +130,7 @@ function App() {
               <div className="flex items-center justify-center h-full text-center select-none">
                 <div>
                   <p className="text-4xl mb-4">📝</p>
-                  <p className="text-sm text-[#6b6b6b]">노트를 선택하거나 새로 만들어 주세요</p>
+                  <p className="text-sm text-[#9b9a97]">노트를 선택하거나 새로 만들어 주세요</p>
                 </div>
               </div>
             )
@@ -141,21 +141,21 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-[#191919] flex flex-col overflow-hidden">
+    <div className="h-screen bg-[#f7f6f3] flex flex-col overflow-hidden">
       {/* 데스크톱: 3패널 */}
       <div
         className="hidden md:grid flex-1 overflow-hidden"
         style={{ gridTemplateColumns: '25% 45% 30%' }}
       >
         <NoteList notes={notes ?? []} selectedNote={selectedNote} onSelect={handleSelect} onDelete={handleDelete} onNewNote={handleNewNote} userEmail={user.user_metadata?.nickname ?? user.email} onLogout={handleLogout} />
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto bg-white">
           {showEditor
             ? <NoteEditor {...sharedEditorProps} />
             : (
               <div className="flex items-center justify-center h-full text-center select-none">
                 <div>
                   <p className="text-4xl mb-4">📝</p>
-                  <p className="text-sm text-[#6b6b6b]">노트를 선택하거나 새로 만들어 주세요</p>
+                  <p className="text-sm text-[#9b9a97]">노트를 선택하거나 새로 만들어 주세요</p>
                 </div>
               </div>
             )
@@ -167,14 +167,14 @@ function App() {
       {/* 모바일: 단일 패널 + 하단 탭 */}
       <div className="md:hidden flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">{mobilePanel()}</div>
-        <nav className="flex border-t border-[#373737] bg-[#202020] shrink-0">
+        <nav className="flex border-t border-[#e8e8e6] bg-white shrink-0">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setMobileTab(tab.id)}
               className={`flex-1 py-3 text-sm font-medium transition-colors ${
                 mobileTab === tab.id
-                  ? 'text-[#2383e2] border-t-2 border-[#2383e2] -mt-px'
+                  ? 'text-[#37352f] border-t-2 border-[#37352f] -mt-px'
                   : 'text-[#9b9a97]'
               }`}
             >
