@@ -1,7 +1,5 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import Fuse from 'fuse.js'
-import { saveNote } from '../db/db'
-import { parseFile } from '../lib/fileParser'
 
 function extractTextFromJSON(node, maxChars = 50) {
   if (!node) return ''
@@ -91,32 +89,6 @@ function NoteCard({ note, isSelected, onClick, onDelete }) {
 
 function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, userEmail, onLogout }) {
   const [query, setQuery] = useState('')
-  const [importing, setImporting] = useState(false)
-  const importRef = useRef(null)
-
-  async function handleImport(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImporting(true)
-    try {
-      const MAX_SIZE = 20 * 1024 * 1024
-      if (file.size > MAX_SIZE) throw new Error('파일 크기가 너무 큽니다 (최대 20MB)')
-
-      const name = file.name.toLowerCase()
-      const allowed = ['.hwp', '.hwpx', '.doc', '.pdf']
-      if (!allowed.some(ext => name.endsWith(ext))) {
-        throw new Error('HWP, HWPX, DOC, PDF 파일만 가져올 수 있습니다')
-      }
-
-      const { title, content } = await parseFile(file)
-      await saveNote({ title, content })
-    } catch (err) {
-      alert('가져오기 실패: ' + err.message)
-    } finally {
-      setImporting(false)
-      if (importRef.current) importRef.current.value = ''
-    }
-  }
 
   const fuse = useMemo(() => new Fuse(notes, { keys: ['title', 'summary', 'keywords'], threshold: 0.4, ignoreLocation: true }), [notes])
   const filtered = useMemo(() => (query.trim() ? fuse.search(query).map((r) => r.item) : notes), [fuse, query, notes])
@@ -200,28 +172,6 @@ function NoteList({ notes = [], selectedNote, onSelect, onDelete, onNewNote, use
         )}
       </div>
 
-      {/* 하단 도구 */}
-      <div className="px-3 py-2.5 border-t border-[#e8e8e6] shrink-0">
-        <label className={`flex items-center justify-center gap-1.5 py-1.5 text-[11px] rounded-md transition-all duration-150 cursor-pointer w-full ${
-          importing
-            ? 'text-[#9b9a97] opacity-60 pointer-events-none'
-            : 'text-[#9b9a97] hover:text-[#6b6a67] hover:bg-white'
-        }`}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          {importing ? '가져오는 중...' : '가져오기 (HWP · HWPX · DOC · PDF)'}
-          <input
-            type="file"
-            accept=".hwp,.hwpx,.doc,.pdf"
-            className="hidden"
-            ref={importRef}
-            onChange={handleImport}
-          />
-        </label>
-      </div>
     </div>
   )
 }
