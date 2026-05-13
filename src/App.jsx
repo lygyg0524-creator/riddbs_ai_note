@@ -93,6 +93,7 @@ function App() {
       setSelectedNote(null)
       setShowEditor(false)
     }
+    refetchNotes()
   }
 
   const sharedEditorProps = {
