@@ -55,6 +55,7 @@ function NoteEditor({ selectedNote, onEditorUpdate, onSave, summary, keywords, s
           summaryLength: summaryLength ?? null,
           keywords: keywords ?? [],
         })
+        onSave?.()
       } else {
         const newNote = await saveNote({ title, content })
         onSave?.(newNote)

@@ -17,7 +17,7 @@ const TABS = [
 
 function App() {
   const user = useAuth()
-  const notes = useNotes(user?.id)
+  const { notes, refetch: refetchNotes } = useNotes(user?.id)
   const [selectedNote, setSelectedNote] = useState(null)
   const [showEditor, setShowEditor] = useState(false)
   const [mobileTab, setMobileTab] = useState('list')
@@ -83,7 +83,8 @@ function App() {
   }
 
   const handleNoteSaved = (note) => {
-    setSelectedNote(note)
+    if (note) setSelectedNote(note)
+    refetchNotes()
   }
 
   const handleDelete = async (id) => {

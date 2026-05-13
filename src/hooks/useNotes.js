@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
 function mapNote(n) {
@@ -9,18 +9,18 @@ function mapNote(n) {
 export function useNotes(userId) {
   const [notes, setNotes] = useState(null)
 
+  const fetchNotes = useCallback(async () => {
+    const { data } = await supabase
+      .from('notes')
+      .select('*')
+      .order('updated_at', { ascending: false })
+    setNotes(data?.map(mapNote) ?? [])
+  }, [])
+
   useEffect(() => {
     if (!userId) {
       setNotes([])
       return
-    }
-
-    async function fetchNotes() {
-      const { data } = await supabase
-        .from('notes')
-        .select('*')
-        .order('updated_at', { ascending: false })
-      setNotes(data?.map(mapNote) ?? [])
     }
 
     fetchNotes()
@@ -33,5 +33,5 @@ export function useNotes(userId) {
     return () => supabase.removeChannel(channel)
   }, [userId])
 
-  return notes
+  return { notes, refetch: fetchNotes }
 }
